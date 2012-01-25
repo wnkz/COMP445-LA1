@@ -1,27 +1,27 @@
 ========================================================================
-    CONSOLE APPLICATION : COMP445_LA1 Project Overview
+    CONSOLE APPLICATION : COMP445_LA1 Client Project Overview
 ========================================================================
 
-AppWizard has created this COMP445_LA1 application for you.
+AppWizard has created this COMP445_LA1 Client application for you.
 
 This file contains a summary of what you will find in each of the files that
-make up your COMP445_LA1 application.
+make up your COMP445_LA1 Client application.
 
 
-COMP445_LA1.vcxproj
+COMP445_LA1 Client.vcxproj
     This is the main project file for VC++ projects generated using an Application Wizard.
     It contains information about the version of Visual C++ that generated the file, and
     information about the platforms, configurations, and project features selected with the
     Application Wizard.
 
-COMP445_LA1.vcxproj.filters
+COMP445_LA1 Client.vcxproj.filters
     This is the filters file for VC++ projects generated using an Application Wizard. 
     It contains information about the association between the files in your project 
     and the filters. This association is used in the IDE to show grouping of files with
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
 
-COMP445_LA1.cpp
+COMP445_LA1 Client.cpp
     This is the main application source file.
 
 /////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ Other standard files:
 
 StdAfx.h, StdAfx.cpp
     These files are used to build a precompiled header (PCH) file
-    named COMP445_LA1.pch and a precompiled types file named StdAfx.obj.
+    named COMP445_LA1 Client.pch and a precompiled types file named StdAfx.obj.
 
 /////////////////////////////////////////////////////////////////////////////
 Other notes:

@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMP445_LA1", "COMP445_LA1\COMP445_LA1.vcxproj", "{11E7CD53-0A33-4147-97C4-CEBA8901B2B5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMP445_LA1 Client", "COMP445_LA1 Client\COMP445_LA1 Client.vcxproj", "{3911375E-A85E-486F-8C10-11F2688D2F93}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMP445_LA1 Server", "COMP445_LA1 Server\COMP445_LA1 Server.vcxproj", "{D8C53A04-7C93-42A3-AA46-C21C54F23164}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +11,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{11E7CD53-0A33-4147-97C4-CEBA8901B2B5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{11E7CD53-0A33-4147-97C4-CEBA8901B2B5}.Debug|Win32.Build.0 = Debug|Win32
-		{11E7CD53-0A33-4147-97C4-CEBA8901B2B5}.Release|Win32.ActiveCfg = Release|Win32
-		{11E7CD53-0A33-4147-97C4-CEBA8901B2B5}.Release|Win32.Build.0 = Release|Win32
+		{3911375E-A85E-486F-8C10-11F2688D2F93}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3911375E-A85E-486F-8C10-11F2688D2F93}.Debug|Win32.Build.0 = Debug|Win32
+		{3911375E-A85E-486F-8C10-11F2688D2F93}.Release|Win32.ActiveCfg = Release|Win32
+		{3911375E-A85E-486F-8C10-11F2688D2F93}.Release|Win32.Build.0 = Release|Win32
+		{D8C53A04-7C93-42A3-AA46-C21C54F23164}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D8C53A04-7C93-42A3-AA46-C21C54F23164}.Debug|Win32.Build.0 = Debug|Win32
+		{D8C53A04-7C93-42A3-AA46-C21C54F23164}.Release|Win32.ActiveCfg = Release|Win32
+		{D8C53A04-7C93-42A3-AA46-C21C54F23164}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
