@@ -8,8 +8,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	ftpd_tcp *f = new ftpd_tcp();
 
-	f->startMessage();
-
+	f->run();
 	return 0;
 }
 
