@@ -24,13 +24,12 @@ ftpd_tcp::ftpd_tcp(void)
 	}
 }
 
-
 ftpd_tcp::~ftpd_tcp(void)
 {
 	WSACleanup();
 }
 
-void ftpd_tcp::run(void)
+void ftpd_tcp::start(void)
 {
 	int clientSocket;
 	int clientLenght;
@@ -42,8 +41,10 @@ void ftpd_tcp::run(void)
 			std::cerr << "run(): accept failed" << std::endl;
 		}
 
-		//TODO: Handle connection(s)
 		std::cout << "accept(): new socket: " << clientSocket << std::endl;
+
+		TCPThread* pt = new TCPThread(clientSocket);
+		pt->start();
 	}
 }
 
