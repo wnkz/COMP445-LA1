@@ -2,6 +2,8 @@
 
 #include <winsock2.h>
 
+#define SERVER_PORT 21
+
 class TcpClient {
 public:
 	TcpClient();
@@ -12,15 +14,13 @@ public:
 	void			sendFile();
 	void			receiveFile();
 
+	void			fillMsg();
 	void			sendMsg();
 	void			receiveMsg();
-
-	unsigned long	resolveName(char name[]);
 
 protected:
 private:
 	int					sock;
 	struct sockaddr_in	ServerAddr;
-	unsigned short		ServerPort;
 	WSADATA				wsadata;
 };
