@@ -22,12 +22,12 @@ void	TcpClient::sendFile(/*char* filename*/) {
 	while (!feof(stream))
      {
        if (fgets(buffer , BUFFER_LENGTH , stream) != NULL) {
-		   /!\Fill Msg(first ? INITIAL_DATA : DATA)
+		   /!\Fill Packet(first ? INITIAL_DATA : DATA)
 	   }
-	   sendMsg(req);
+	   sendPacket(req);
 	   first = false;
      }
-	 sendMsg for finish
+	 sendPacket for finish
      fclose (stream);
 	 */
 }
@@ -36,40 +36,29 @@ void	TcpClient::receiveFile() {
 
 }
 
-void	TcpClient::fillMsg() {
+void	TcpClient::fillPacket() {
 
 }
 
-void	TcpClient::sendMsg(/*Resquest req*/) {
-	/*
+void	TcpClient::sendPacket(Packet *p) {
 	int size;
-	size = send(sock,(char *)req, req.size, 0))
+	size = send(sock,(char *)p, p->buffer_length + PACKET_HEADER_LENGTH, 0);
 	if (size == -1)
-		throw("Critical Error : send\n");
-	*/
+		throw("Error : send\n");
 }
 
-void	TcpClient::receiveMsg() {
-	/*
+Packet*	TcpClient::receivePacket() {
 	int	size;
-	char buf[MAX_REQUEST_SIZE];
-	t_header header;
+	char buf[MAX_PACKET_LENGTH];
+	Packet *p = new Packet;
 
-	void *body;
-	Response *response;
-
-	size = ::recv(sock, buf, sizeof(buf), 0);
-	if (size == -1 || size < sizeof(header))
-		throw("Critical Error : recv\n");
-	memcpy(&header, buf, sizeof(header));
-
-	body = reinterpret_cast<void *>(new char[size - sizeof(header)]);
-	memcpy(body, &buf[sizeof(header)], size - sizeof(header));
-	response.code = ntohl(header.code);
-	response.body = body;
-	delete body;
-	return reponse;
-	*/
+	size = recv(sock, buf, sizeof(buf), 0);
+	if (size == -1 || size < PACKET_HEADER_LENGTH)
+		throw("Error : recv\n");
+	memcpy((char *)p->type, buf, PACKET_HEADER_LENGTH);
+	p->buffer_length = size - PACKET_HEADER_LENGTH;
+	memcpy((char *)p->buffer, &buf[PACKET_HEADER_LENGTH], p->buffer_length);
+	return p;
 }
 
 void	TcpClient::run() {
@@ -80,13 +69,8 @@ void	TcpClient::run() {
 			WSACleanup();  
 			throw("Critical Error : WSAStartup\n");
 		}
-		char	username[40];
-		char	localhost[100];
-		unsigned long dword = 39;
-
-		if (!GetUserNameW((LPWSTR)username, &dword))
-			throw("Critical Error : GetUserName\n");
-		if (gethostname(localhost, 99) != 0) 
+		char	localhost[HOSTNAME_LENGTH];
+		if (gethostname(localhost, HOSTNAME_LENGTH - 1) != 0) 
 			throw("Critical Error : GetHostname\n");
 		local = localhost;
 	}
@@ -98,10 +82,10 @@ void	TcpClient::run() {
 		<< "HELP : Type \"quit\" to exit" << std::endl << std::endl;
 
 	while (1) {
-		char	remotehost[100];
+		char	remotehost[HOSTNAME_LENGTH];
 		char	direction[4];
-		char	filename[200];
-		char	cmd[304];
+		char	filename[FILENAME_LENGTH];
+		char	cmd[HOSTNAME_LENGTH + DIRECTION_LENGTH + FILENAME_LENGTH + 3];
 
 		std::cout << local.c_str() << ">";
 
@@ -124,28 +108,35 @@ void	TcpClient::run() {
 			
 			memset(&ServerAddr, 0, sizeof(ServerAddr));
 			ServerAddr.sin_family = AF_INET;
-			memcpy(&ServerAddr.sin_addr,remote->h_addr,remote->h_length);
+			memcpy(&ServerAddr.sin_addr, remote->h_addr, remote->h_length);
 			ServerAddr.sin_family = remote->h_addrtype;
 			ServerAddr.sin_port = htons(SERVER_PORT);
 			if (connect(sock, (struct sockaddr *) &ServerAddr, sizeof(ServerAddr)) < 0)
-				throw("Critical Error : socket connection\n");
+				throw("Error : socket connection\n");
 		}
 		catch (char *str) {
 			std::cerr << str << std::endl;
 			closesocket(sock);
-			break ;
+			continue ;
 		}
-		//fillMsg();
+		Request request;
+		memcpy(request.hostname, local.c_str(), local.length());
+		memcpy(request.filename, filename, sizeof(filename));
+		request.direction = (!strcmp(direction, "GET") ? GET : PUT);
+
+		Packet p;
+		p.type = REQUEST;
+		memcpy(p.buffer, &request, sizeof(request));
+		p.buffer_length = sizeof(request);
 		
 		try {
-		//sendMsg(req);
-		
-		//receiveMsg();
+		sendPacket(&p);
+		receivePacket();
 		}
 		catch (char *str) {
 			std::cerr << str << std::endl;
 			closesocket(sock);
-			break ;
+			continue ;
 		}
 		closesocket(sock);
 	}
