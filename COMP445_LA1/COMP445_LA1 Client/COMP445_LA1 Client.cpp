@@ -6,6 +6,9 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	TcpClient *client = new TcpClient();
+
+	client->run();
 	return 0;
 }
 

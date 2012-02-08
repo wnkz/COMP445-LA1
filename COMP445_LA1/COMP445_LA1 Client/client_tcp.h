@@ -56,10 +56,9 @@ public:
 
 	void			run();
 
-	void			sendFile();
-	void			receiveFile();
+	void			sendFile(char *filename);
+	void			receiveFile(char *filename);
 
-	void			fillPacket();
 	void			sendPacket(Packet *p);
 	Packet			*receivePacket();
 

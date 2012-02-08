@@ -11,33 +11,50 @@ TcpClient::TcpClient() {
 TcpClient::~TcpClient() {
 }
 
-void	TcpClient::sendFile(/*char* filename*/) {
-	/*Request *req
+void	TcpClient::sendFile(char* filename) {
+	Packet *p = new Packet;
 	bool first = true;
 
 	FILE * stream = fopen(filename, "r+b");
 
-	if (stream == NULL)
+	if (stream == NULL) {
+		std::cerr << "Error : fopen" << std::endl;
 		return ;
+	}
 	while (!feof(stream))
      {
-       if (fgets(buffer , BUFFER_LENGTH , stream) != NULL) {
-		   /!\Fill Packet(first ? INITIAL_DATA : DATA)
+       if (fgets(p->buffer , BUFFER_LENGTH , stream) != NULL) {
+		   if (sizeof(p->buffer) < BUFFER_LENGTH)
+			   p->type = FINAL_DATA;
+		   else
+			   p->type = (first ? INITIAL_DATA : DATA);
+		   p->buffer_length = sizeof(p->buffer);
 	   }
-	   sendPacket(req);
+	   sendPacket(p);
 	   first = false;
      }
-	 sendPacket for finish
-     fclose (stream);
-	 */
+     fclose(stream);
+	 std::cout << "File has been sent successfully" << std::endl;
 }
 
-void	TcpClient::receiveFile() {
+void	TcpClient::receiveFile(char *filename) {
+	Packet *p = new Packet;
+	bool	stop = false;
+	
+	FILE * stream = fopen(filename, "r+b");
 
-}
-
-void	TcpClient::fillPacket() {
-
+	if (stream == NULL) {
+		std::cerr << "Error : fopen" << std::endl;
+		return ;
+	}
+	while (stop == false) {
+		p = receivePacket();
+		if (p->type = FINAL_DATA)
+			stop = true;
+		fwrite(p->buffer, sizeof(char), p->buffer_length, stream);
+	}
+	fclose(stream);
+	std::cout << "File has been received successfully" << std::endl;
 }
 
 void	TcpClient::sendPacket(Packet *p) {
@@ -81,7 +98,7 @@ void	TcpClient::run() {
 	std::cout << "HELP : [server name] [GET|PUT] [filename path]" << std::endl
 		<< "HELP : Type \"quit\" to exit" << std::endl << std::endl;
 
-	while (1) {
+	while (42) {
 		char	remotehost[HOSTNAME_LENGTH];
 		char	direction[4];
 		char	filename[FILENAME_LENGTH];
@@ -130,8 +147,19 @@ void	TcpClient::run() {
 		p.buffer_length = sizeof(request);
 		
 		try {
-		sendPacket(&p);
-		receivePacket();
+			sendPacket(&p);
+			Response *res = new Response;
+			Packet *pRes = receivePacket();
+			memcpy(res, pRes->buffer, pRes->buffer_length);
+
+			if (res->acknowledge == NO)
+				std::cerr << "Refused paquet : " << res->message << std::endl;
+			switch (request.direction) {
+			case GET:
+				receiveFile(request.filename);
+			case PUT:
+				sendFile(request.filename);
+			}
 		}
 		catch (char *str) {
 			std::cerr << str << std::endl;
