@@ -136,6 +136,7 @@ void	TcpClient::run() {
 			closesocket(sock);
 			continue ;
 		}
+
 		Request request;
 		memcpy(request.hostname, local.c_str(), local.length());
 		memcpy(request.filename, filename, sizeof(filename));

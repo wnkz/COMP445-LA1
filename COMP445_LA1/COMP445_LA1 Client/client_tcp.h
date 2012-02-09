@@ -14,13 +14,13 @@ static const unsigned int BUFFER_LENGTH = 1024;
 static const unsigned int PACKET_HEADER_LENGTH = 8;
 static const unsigned int MAX_PACKET_LENGTH = PACKET_HEADER_LENGTH + BUFFER_LENGTH;
 
-enum Direction{
-	GET=1,
+enum Direction {
+	GET = 1,
 	PUT
 };
 
 enum Type {
-	REQUEST=1,
+	REQUEST = 1,
 	RESPONSE,
 	INITIAL_DATA,
 	DATA,
@@ -28,26 +28,26 @@ enum Type {
 };
 
 enum ACK {
-	YES=1,
+	YES = 1,
 	NO
 };
 
-typedef struct {
+struct Request {
 	Direction direction;
 	char hostname[HOSTNAME_LENGTH];
 	char filename[FILENAME_LENGTH];
-} Request;
+};
 
-typedef struct {
+struct Response{
 	ACK acknowledge;
 	char message[RESPONSE_LENGTH];
-} Response;
+};
 
-typedef struct {
+struct Packet {
 	Type type;
 	int buffer_length;
 	char buffer[BUFFER_LENGTH];
-} Packet;
+};
 
 class TcpClient {
 public:
