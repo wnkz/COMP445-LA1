@@ -7,4 +7,5 @@ COMP445_LA1/Release
 *.filters
 *.user
 *.suo
+enc_temp_folder
 LA1_ExampleFiles/*

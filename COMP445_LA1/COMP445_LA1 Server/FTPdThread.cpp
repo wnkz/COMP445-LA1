@@ -14,6 +14,7 @@ FTPdThread::FTPdThread(std::string IP, SOCKET Socket, SOCKADDR_IN* Addr) : ip(IP
 	handleFnMap[FTPProtocol::CPWD] = &FTPdThread::CPwd;
 	handleFnMap[FTPProtocol::CRETR] = &FTPdThread::CRetr;
 	handleFnMap[FTPProtocol::CSTOR] = &FTPdThread::CStor;
+	handleFnMap[FTPProtocol::CQUIT] = &FTPdThread::CQuit;
 
 	userLogin = "";
 	userSession = false;
@@ -40,7 +41,7 @@ void FTPdThread::run(void)
 			break ;
 		}
 		else if (n == SOCKET_ERROR) {
-			std::cerr << "WSA Error Code:" << WSAGetLastError() << std::endl;
+			std::cerr << "WSA Error Code: " << WSAGetLastError() << std::endl;
 			//WSACleanup();
 			break ;
 		}
@@ -201,7 +202,7 @@ void FTPdThread::CRetr(std::vector<std::string>& Arguments)
 
 		std::stringstream ss;
 
-		ss << FTPProtocol::R150_RETR << Arguments[1] << "(" << size << ")." << std::endl;
+		ss << FTPProtocol::R150_RETR << Arguments[1] << "(" << size << " bytes)." << std::endl;
 		send(s, ss.str().c_str(), ss.str().length(), 0);
 
 		send(ds, memblock, size, 0);
@@ -244,6 +245,12 @@ void FTPdThread::CStor(std::vector<std::string>& Arguments)
 	} else {
 		send(s, FTPProtocol::R550.c_str(), FTPProtocol::R550.length(), 0);
 	}
+}
+
+void FTPdThread::CQuit(std::vector<std::string>& Arguments)
+{
+	send(s, FTPProtocol::R221.c_str(), FTPProtocol::R221.length(), 0);
+	closesocket(s);
 }
 
 #pragma endregion

@@ -10,6 +10,7 @@ public:
 
 	static const std::string R215;
 	static const std::string R220;
+	static const std::string R221;
 	static const std::string R226_RETR;
 	static const std::string R226_STOR;
 	static const std::string R227;
@@ -30,4 +31,5 @@ public:
 	static const std::string CPWD;
 	static const std::string CRETR;
 	static const std::string CSTOR;
+	static const std::string CQUIT;
 };
