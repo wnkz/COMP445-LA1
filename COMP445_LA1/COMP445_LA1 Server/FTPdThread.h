@@ -63,4 +63,5 @@ private:
 	bool userSession;
 
 	static const unsigned int STORBUFFERSIZE = 4096;
+	static const std::string FILE_DIRECTORY;
 };

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "FTPdThread.h"
 
+const std::string FTPdThread::FILE_DIRECTORY = "FILES";
 
 FTPdThread::FTPdThread(std::string IP, SOCKET Socket, SOCKADDR_IN* Addr) : ip(IP), ipcomma(IP), s(Socket), addr(*Addr)
 {
@@ -107,7 +108,7 @@ void FTPdThread::CommandCleanup(char* cmd)
 		str.erase(str.find ("\r\n"), 2);
 	}
 
-	strcpy(cmd, str.c_str());
+	strncpy_s(cmd, FTPProtocol::CMD_MAX_LENGTH, str.c_str(), str.length());
 }
 
 std::vector<std::string>* FTPdThread::CommandParse(char* cmd)
@@ -189,7 +190,7 @@ void FTPdThread::CRetr(std::vector<std::string>& Arguments)
 	std::string filePath;
 
 	_getcwd(currentPath, sizeof(currentPath) / sizeof(TCHAR));
-	filePath = currentPath + std::string("\\") + Arguments[1];
+	filePath = currentPath + std::string("\\") + FTPdThread::FILE_DIRECTORY + std::string("\\") + Arguments[1];
 
 	std::ifstream file(filePath, std::ios::in|std::ios::binary|std::ios::ate);
 	if (file.is_open())
@@ -226,7 +227,7 @@ void FTPdThread::CStor(std::vector<std::string>& Arguments)
 	int r;
 
 	_getcwd(currentPath, sizeof(currentPath) / sizeof(TCHAR));
-	filePath = currentPath + std::string("\\") + Arguments[1];
+	filePath = currentPath + std::string("\\") + FTPdThread::FILE_DIRECTORY + std::string("\\") + Arguments[1];
 
 	memset(memblock, 0, FTPdThread::STORBUFFERSIZE);
 	std::ofstream file(filePath, std::ios::out|std::ios::binary|std::ios::trunc);
