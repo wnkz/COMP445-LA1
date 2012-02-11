@@ -13,6 +13,7 @@ FTPdThread::FTPdThread(std::string IP, SOCKET Socket, SOCKADDR_IN* Addr) : ip(IP
 	handleFnMap[FTPProtocol::CPASV] = &FTPdThread::CPasv;
 	handleFnMap[FTPProtocol::CPWD] = &FTPdThread::CPwd;
 	handleFnMap[FTPProtocol::CRETR] = &FTPdThread::CRetr;
+	handleFnMap[FTPProtocol::CSTOR] = &FTPdThread::CStor;
 
 	userLogin = "";
 	userSession = false;
@@ -209,6 +210,37 @@ void FTPdThread::CRetr(std::vector<std::string>& Arguments)
 		send(s, FTPProtocol::R226_RETR.c_str(), FTPProtocol::R226_RETR.length(), 0);
 
 		delete[] memblock;
+	} else {
+		send(s, FTPProtocol::R550.c_str(), FTPProtocol::R550.length(), 0);
+	}
+}
+
+void FTPdThread::CStor(std::vector<std::string>& Arguments)
+{
+	send(s, FTPProtocol::R150_STOR.c_str(), FTPProtocol::R150_STOR.length(), 0);
+
+	char memblock[FTPdThread::STORBUFFERSIZE];
+	char currentPath[FILENAME_MAX];
+	std::string filePath;
+	int r;
+
+	_getcwd(currentPath, sizeof(currentPath) / sizeof(TCHAR));
+	filePath = currentPath + std::string("\\") + Arguments[1];
+
+	memset(memblock, 0, FTPdThread::STORBUFFERSIZE);
+	std::ofstream file(filePath, std::ios::out|std::ios::binary|std::ios::trunc);
+	if (file.is_open())
+	{
+		while ((r = recv(ds, memblock, FTPdThread::STORBUFFERSIZE, 0)) != 0) {
+			if (r == SOCKET_ERROR) {
+				std::cerr << "WSA Error Code:" << WSAGetLastError() << std::endl;
+				send(s, FTPProtocol::R451.c_str(), FTPProtocol::R451.length(), 0);
+			}
+			file << memblock;
+		}
+		file.close();
+		closesocket(ds);
+		send(s, FTPProtocol::R226_STOR.c_str(), FTPProtocol::R226_STOR.length(), 0);
 	} else {
 		send(s, FTPProtocol::R550.c_str(), FTPProtocol::R550.length(), 0);
 	}

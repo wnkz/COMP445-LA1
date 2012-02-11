@@ -2,10 +2,12 @@
 #include "FTPProtocol.h"
 
 const std::string FTPProtocol::R150_RETR = "150 Opening data connection for ";
+const std::string FTPProtocol::R150_STOR = "150 Ok to send data.\n";
 
 const std::string FTPProtocol::R215 = "215 UNIX Type: L8\n";
 const std::string FTPProtocol::R220 = "220 COMP445 FTP Server\n";
 const std::string FTPProtocol::R226_RETR = "226 File send OK.\n";
+const std::string FTPProtocol::R226_STOR = "226 File receive OK.\n";
 const std::string FTPProtocol::R227 = "227 Entering Passive Mode";
 const std::string FTPProtocol::R230 = "230 User logged on, proceed\n";
 
@@ -23,3 +25,4 @@ const std::string FTPProtocol::CPORT = "PORT";
 const std::string FTPProtocol::CPASV = "PASV";
 const std::string FTPProtocol::CPWD = "PWD";
 const std::string FTPProtocol::CRETR = "RETR";
+const std::string FTPProtocol::CSTOR = "STOR";
