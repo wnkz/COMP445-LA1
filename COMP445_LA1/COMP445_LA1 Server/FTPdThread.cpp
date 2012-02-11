@@ -43,6 +43,7 @@ void FTPdThread::run(void)
 		}
 		else if (n == SOCKET_ERROR) {
 			std::cerr << "WSA Error Code: " << WSAGetLastError() << std::endl;
+			closesocket(s);
 			//WSACleanup();
 			break ;
 		}
@@ -206,7 +207,10 @@ void FTPdThread::CRetr(std::vector<std::string>& Arguments)
 		ss << FTPProtocol::R150_RETR << Arguments[1] << "(" << size << " bytes)." << std::endl;
 		send(s, ss.str().c_str(), ss.str().length(), 0);
 
-		send(ds, memblock, size, 0);
+		int r;
+		if ((r = send(ds, memblock, size, 0)) == SOCKET_ERROR) {
+			send(s, FTPProtocol::R451.c_str(), FTPProtocol::R451.length(), 0);
+		}
 		closesocket(ds);
 
 		send(s, FTPProtocol::R226_RETR.c_str(), FTPProtocol::R226_RETR.length(), 0);
@@ -237,6 +241,9 @@ void FTPdThread::CStor(std::vector<std::string>& Arguments)
 			if (r == SOCKET_ERROR) {
 				std::cerr << "WSA Error Code:" << WSAGetLastError() << std::endl;
 				send(s, FTPProtocol::R451.c_str(), FTPProtocol::R451.length(), 0);
+				file.close();
+				closesocket(ds);
+				return ;
 			}
 			file << memblock;
 		}
