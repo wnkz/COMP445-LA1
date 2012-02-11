@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{D8C53A04-7C93-42A3-AA46-C21C54F23164}</ProjectGuid>
+    <ProjectGuid>{8BD19FED-3700-44C0-88EB-2E605C5E32F2}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>COMP445_LA1Server</RootNamespace>
   </PropertyGroup>
@@ -75,21 +75,24 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ftpd_tcp.h" />
-    <ClInclude Include="myThread.h" />
+    <ClInclude Include="BaseThread.h" />
+    <ClInclude Include="FTPd.h" />
+    <ClInclude Include="FTPdThread.h" />
+    <ClInclude Include="FTPProtocol.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="TCPThread.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BaseThread.cpp" />
     <ClCompile Include="COMP445_LA1 Server.cpp" />
-    <ClCompile Include="ftpd_tcp.cpp" />
-    <ClCompile Include="myThread.cpp" />
+    <ClCompile Include="FTPd.cpp" />
+    <ClCompile Include="FTPdThread.cpp" />
+    <ClCompile Include="FTPProtocol.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TCPThread.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

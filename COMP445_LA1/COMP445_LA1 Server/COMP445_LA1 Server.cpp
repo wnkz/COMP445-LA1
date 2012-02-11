@@ -2,11 +2,11 @@
 //
 
 #include "stdafx.h"
-
+#include "FTPd.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	ftpd_tcp *f = new ftpd_tcp();
+	FTPd* f = new FTPd();
 
 	f->start();
 	return 0;

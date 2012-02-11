@@ -7,8 +7,9 @@
 
 #include "targetver.h"
 
-#include <iostream>
 #include <stdio.h>
 #include <tchar.h>
 
-#include "ftpd_tcp.h"
+
+
+// TODO: reference additional headers your program requires here
