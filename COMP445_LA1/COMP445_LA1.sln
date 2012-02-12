@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMP445_LA1 Server", "COMP445_LA1 Server\COMP445_LA1 Server.vcxproj", "{8BD19FED-3700-44C0-88EB-2E605C5E32F2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMP445_LA1 Client", "COMP445_LA1 Client\COMP445_LA1 Client.vcxproj", "{7DE8FF0C-E9CD-4795-A75A-7F0B88172302}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{8BD19FED-3700-44C0-88EB-2E605C5E32F2}.Debug|Win32.Build.0 = Debug|Win32
 		{8BD19FED-3700-44C0-88EB-2E605C5E32F2}.Release|Win32.ActiveCfg = Release|Win32
 		{8BD19FED-3700-44C0-88EB-2E605C5E32F2}.Release|Win32.Build.0 = Release|Win32
+		{7DE8FF0C-E9CD-4795-A75A-7F0B88172302}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7DE8FF0C-E9CD-4795-A75A-7F0B88172302}.Debug|Win32.Build.0 = Debug|Win32
+		{7DE8FF0C-E9CD-4795-A75A-7F0B88172302}.Release|Win32.ActiveCfg = Release|Win32
+		{7DE8FF0C-E9CD-4795-A75A-7F0B88172302}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
