@@ -24,9 +24,9 @@ public:
 	~ClientFTP(void);
 
 	void	initSocket(char *remoteHostName);
-	void	dinitSocket(const char *ip, int port);
+	void	initSocketData(const char *ip, unsigned short int port);
 	void	connect();
-	void	dconnect();
+	void	connectData();
 
 	void	loadLocal();
 	void	loadLocalUsername();
@@ -36,6 +36,8 @@ public:
 
 	void	recv(char *cmd);
 	void	send(const char *str, int length);
+	int		recvData(char *cmd);
+	void	sendData(const char *str, int length);
 
 	void	responseCleanup(char* cmd);
 	std::vector<std::string>*	Parse(char* cmd);
@@ -49,12 +51,17 @@ public:
 
 private:
 	void CQuit(std::vector<std::string>& Arguments);
+	void CUser(std::vector<std::string>& Arguments);
 	void CRetr(std::vector<std::string>& Arguments);
 	void CStor(std::vector<std::string>& Arguments);
 
 	void RPasv(std::vector<std::string>& Arguments);
-	void RStor(std::vector<std::string>& Arguments);
+	void RetrStor(std::vector<std::string>& Arguments);
+	void StorRetr(std::vector<std::string>& Arguments);
+	void RQuit(std::vector<std::string>& Arguments);
 	void RLog(std::vector<std::string>& Arguments);
+	void ROpenFailed(std::vector<std::string>& Arguments);
+	void RAborted(std::vector<std::string>& Arguments);
 
 	typedef void (ClientFTP::*handleFn)(std::vector<std::string>& Arguments);
 
@@ -62,16 +69,21 @@ private:
 
 private:
 	SOCKET	sock;
-	SOCKET  dsock;
+	SOCKET  sockData;
+	
 	unsigned short	port;
+
 	SOCKADDR_IN	serverAddr;
-	SOCKADDR_IN dserverAddr;
+	SOCKADDR_IN serverAddrData;
 
 	std::string localHostname;
 	std::string	localUsername;
 	std::string filename;
 	std::string lcmd;
 
+	bool	first;
+
 private:
 	const static unsigned short DEFAULT_LISTEN_PORT = 21;
+	static const unsigned int STORBUFFERSIZE = 4096;
 };

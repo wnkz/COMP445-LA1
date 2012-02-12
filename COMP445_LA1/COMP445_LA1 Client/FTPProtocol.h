@@ -13,6 +13,8 @@ public:
 	static const std::string R215_c;
 	static const std::string R220;
 	static const std::string R220_c;
+	static const std::string R221;
+	static const std::string R221_c;
 	static const std::string R226_c;
 	static const std::string R226_RETR;
 	static const std::string R226_STOR;

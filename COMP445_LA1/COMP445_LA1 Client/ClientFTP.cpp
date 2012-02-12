@@ -10,15 +10,21 @@ ClientFTP::ClientFTP(void)
 	{
 		std::cerr << "WSAStartup() failed" << std::endl;
 	}
-	localUsername = "USER ";
 	loadLocal();
 
 	handleFnMap[FTPProtocol::CQUIT] = &ClientFTP::CQuit;
+	handleFnMap[FTPProtocol::CUSER] = &ClientFTP::CUser;
 	handleFnMap[FTPProtocol::CRETR] = &ClientFTP::CRetr;
 	handleFnMap[FTPProtocol::CSTOR] = &ClientFTP::CStor;
 	handleFnMap[FTPProtocol::R227_c] = &ClientFTP::RPasv;
 	handleFnMap[FTPProtocol::R230_c] = &ClientFTP::RLog;
-	handleFnMap[FTPProtocol::R150_c] = &ClientFTP::RStor;
+	handleFnMap[FTPProtocol::R221_c] = &ClientFTP::RQuit;
+	handleFnMap[FTPProtocol::R226_c] = &ClientFTP::StorRetr;
+	handleFnMap[FTPProtocol::R150_c] = &ClientFTP::RetrStor;
+	handleFnMap[FTPProtocol::R550_c] = &ClientFTP::ROpenFailed;
+	handleFnMap[FTPProtocol::R451_c] = &ClientFTP::RAborted;
+
+	first = true;
 }
 
 ClientFTP::~ClientFTP(void)
@@ -26,6 +32,7 @@ ClientFTP::~ClientFTP(void)
 	WSACleanup();
 }
 
+#pragma region init&connect
 void	ClientFTP::initSocket(char *remoteHostname)
 {
 	HOSTENT	*remote;
@@ -45,29 +52,20 @@ void	ClientFTP::initSocket(char *remoteHostname)
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	memcpy(&serverAddr.sin_addr, remote->h_addr, remote->h_length);
-	serverAddr.sin_family = remote->h_addrtype;
 	serverAddr.sin_port = htons(port);
 }
 
-void	ClientFTP::dinitSocket(const char *ip, int port)
+void	ClientFTP::initSocketData(const char *ip, unsigned short int portData)
 {
-	HOSTENT	*remote;
-	remote = gethostbyname(ip);
-	if (remote == NULL)
-	{
-		std::cerr << "[" << ip << "] unknown host" << std::endl;
-		return ;
-	}
-
-	dsock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (dsock < 0)
+	port = portData;
+	sockData = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sockData < 0)
 		throw("socket() failed");
 	
-	memset(&dserverAddr, 0, sizeof(dserverAddr));
-	dserverAddr.sin_family = AF_INET;
-	memcpy(&dserverAddr.sin_addr, remote->h_addr, remote->h_length);
-	dserverAddr.sin_family = remote->h_addrtype;
-	dserverAddr.sin_port = htons(port);
+	memset(&serverAddrData, 0, sizeof(serverAddrData));
+	serverAddrData.sin_family = AF_INET;
+	serverAddrData.sin_addr.s_addr = inet_addr(ip);
+	serverAddrData.sin_port = htons(port);
 }
 
 void	ClientFTP::connect()
@@ -79,27 +77,31 @@ void	ClientFTP::connect()
 	}
 }
 
-void	ClientFTP::dconnect()
+void	ClientFTP::connectData()
 {
-	if (::connect(dsock, (struct sockaddr *) &dserverAddr, sizeof(dserverAddr)) < 0)
+	if (::connect(sockData, (struct sockaddr *) &serverAddrData, sizeof(serverAddrData)) < 0)
 	{
-		closesocket(dsock);
-		throw("connect() failed");
+		closesocket(sockData);
+		throw("connectData() failed");
 	}
 }
 
+#pragma endregion
+
+#pragma region local
 void	ClientFTP::loadLocal()
 {
 	loadLocalUsername();
 	loadLocalHostname();
 }
+
 void	ClientFTP::loadLocalUsername()
 {
 	char acUserName[256];
 
 	DWORD nUserName = 256;
 	if (GetUserName((LPWSTR)acUserName, &nUserName))
-		localUsername += acUserName;
+		localUsername = acUserName;
 }
 
 void	ClientFTP::loadLocalHostname()
@@ -113,7 +115,9 @@ void	ClientFTP::loadLocalHostname()
 	else
 		localHostname = hname;
 }
+#pragma endregion
 
+#pragma region help&error
 void	ClientFTP::WSAError(std::string err)
 {
 	std::cerr << err.c_str() << std::endl;
@@ -122,9 +126,11 @@ void	ClientFTP::WSAError(std::string err)
 
 void	ClientFTP::startMessage()
 {
-	std::cout << "HELP : [RETR|STOR] [filename path]" << std::endl
+	std::cout << "HELP : [RETR|STOR] [filename]" << std::endl
 		<< "HELP : Type \"QUIT\" to exit" << std::endl << std::endl;
 }
+#pragma endregion
+
 
 void ClientFTP::CQuit(std::vector<std::string>& Arguments)
 {
@@ -136,6 +142,22 @@ void ClientFTP::CQuit(std::vector<std::string>& Arguments)
 	{
 		WSAError(err);
 	}
+	handleResponse();
+}
+
+void ClientFTP::CUser(std::vector<std::string>& Arguments)
+{
+	try
+	{
+	std::stringstream ss;
+	ss << FTPProtocol::CUSER.c_str() << " " << localUsername.c_str();
+	send(ss.str().c_str(), ss.str().length());
+	}
+	catch (char *err)
+	{
+		WSAError(err);
+	}
+	handleResponse();
 }
 
 void ClientFTP::CRetr(std::vector<std::string>& Arguments)
@@ -143,6 +165,9 @@ void ClientFTP::CRetr(std::vector<std::string>& Arguments)
 	if (Arguments.size() < 2)
 		return ;
 	send(FTPProtocol::CPASV.c_str(), FTPProtocol::CPASV.length());
+	lcmd = FTPProtocol::CRETR;
+	filename = Arguments[1];
+	handleResponse();
 }
 
 void ClientFTP::CStor(std::vector<std::string>& Arguments)
@@ -150,6 +175,9 @@ void ClientFTP::CStor(std::vector<std::string>& Arguments)
 	if (Arguments.size() < 2)
 		return ;
 	send(FTPProtocol::CPASV.c_str(), FTPProtocol::CPASV.length());
+	lcmd = FTPProtocol::CSTOR;
+	filename = Arguments[1];
+	handleResponse();
 }
 
 void ClientFTP::RPasv(std::vector<std::string>& Arguments)
@@ -163,25 +191,24 @@ void ClientFTP::RPasv(std::vector<std::string>& Arguments)
 	
 	std::stringstream ip;
 	ip << i[0] << "." << i[1] << "." << i[2] << "." << i[3];
-	int p = i[4] * 256 + i[5];
+	unsigned short int p = i[4] * 256 + i[5];
 
-	std::cout << "LA\n";
 	try 
 	{
-		dinitSocket(ip.str().c_str(), p);
-		dconnect();
+		initSocketData(ip.str().c_str(), p);
+		connectData();
 	}
 	catch (char *err)
 	{
 		WSAError(err);
+		return ;
 	}
-	std::cout << "ICI\n";
 
 	std::stringstream ss;
 	if (lcmd == FTPProtocol::CSTOR)
-		ss << FTPProtocol::CSTOR << " " << Arguments[1];
+		ss << FTPProtocol::CSTOR.c_str() << " " << filename.c_str();
 	else if (lcmd == FTPProtocol::CRETR)
-		ss << FTPProtocol::CRETR << " " << Arguments[1];
+		ss << FTPProtocol::CRETR.c_str() << " " << filename.c_str();
 	try
 	{
 		send(ss.str().c_str(), ss.str().length());
@@ -190,11 +217,89 @@ void ClientFTP::RPasv(std::vector<std::string>& Arguments)
 	{
 		WSAError(err);
 	}
+	handleResponse();
 }
 
-void ClientFTP::RStor(std::vector<std::string>& Arguments)
+void ClientFTP::ROpenFailed(std::vector<std::string>& Arguments)
 {
-	;
+	std::cerr << "Failed to open \"" << filename.c_str() << "\"" <<std::endl;
+	if (sockData != NULL)
+		closesocket(sockData);
+	filename.clear();
+	lcmd.clear();
+}
+
+void ClientFTP::RAborted(std::vector<std::string>& Arguments)
+{
+	std::cerr << "Requested action aborted" << std::endl;
+	if (sockData != NULL)
+		closesocket(sockData);
+	filename.clear();
+	lcmd.clear();
+}
+
+void ClientFTP::RetrStor(std::vector<std::string>& Arguments)
+{
+	if (lcmd == FTPProtocol::CSTOR)
+	{
+		std::ifstream::pos_type size;
+		char* memblock;
+
+		std::ifstream file(filename, std::ios::in|std::ios::binary|std::ios::ate);
+		if (file.is_open())
+		{
+			size = file.tellg();
+			memblock = new char[size];
+			file.seekg(0, std::ios::beg);
+			file.read(memblock, size);
+			file.close();
+			sendData(memblock, size);
+			delete[] memblock;
+			closesocket(sockData);
+			handleResponse();
+		}
+	}
+	else if (lcmd == FTPProtocol::CRETR)
+	{
+		char memblock[ClientFTP::STORBUFFERSIZE];
+		memset(memblock, 0, ClientFTP::STORBUFFERSIZE);
+		std::ofstream file(filename, std::ios::out|std::ios::binary|std::ios::trunc);
+		if (file.is_open())
+		{
+			int r;
+			while ((r = recvData(memblock)) != 0)
+			{
+				if (r == SOCKET_ERROR)
+				{
+					WSAError("recvData() failed");
+					file.close();
+					closesocket(sockData);
+					break ;
+				}
+				file << memblock;
+			}
+		file.close();
+		}
+		handleResponse();
+	}
+}
+
+void ClientFTP::StorRetr(std::vector<std::string>& Arguments)
+{
+	if (lcmd == FTPProtocol::CRETR)
+	{
+		if (sockData != NULL)
+			closesocket(sockData);
+	}
+	filename.clear();
+	lcmd.clear();
+}
+
+void ClientFTP::RQuit(std::vector<std::string>& Arguments)
+{
+	if (sock != NULL)
+		closesocket(sock);
+	exit(0);
 }
 
 void ClientFTP::RLog(std::vector<std::string>& Arguments)
@@ -206,19 +311,22 @@ void	ClientFTP::handleCommand()
 {
 	char cmd[FTPProtocol::CMD_MAX_LENGTH];
 	memset(cmd, 0, sizeof(cmd));
-	std::cin.getline(cmd, FTPProtocol::CMD_MAX_LENGTH);
+	if (first == true)
+	{
+		handleResponse();
+		first = false;
+		std::stringstream ss;
+		ss << FTPProtocol::CUSER.c_str();
+		ss >> cmd;
+	}
+	else
+		std::cin.getline(cmd, FTPProtocol::CMD_MAX_LENGTH);
 
 	if (cmd[0] == '\0')
-	{
-		std::cout << localHostname.c_str() << ">";
 		return ;
-	}
 	std::vector<std::string>* Arguments = Parse(cmd);
 	if (Arguments->size() == 0)
-	{
-		std::cout << localHostname.c_str() << ">";
 		return ;
-	}
 
 	std::map<const std::string, handleFn>::iterator it = handleFnMap.find((*Arguments)[0]);
 	if (it != handleFnMap.end())
@@ -227,8 +335,9 @@ void	ClientFTP::handleCommand()
 	}
 	else
 		std::cerr << (*Arguments)[0].c_str() << ": Command not implemented" << std::endl;
-	std::cout << localHostname.c_str() << ">";
 }
+
+#pragma region send&recv
 
 void	ClientFTP::recv(char *cmd)
 {
@@ -236,9 +345,17 @@ void	ClientFTP::recv(char *cmd)
 
 	n = ::recv(sock, cmd, FTPProtocol::CMD_MAX_LENGTH, 0);
 	if (n == 0)
-		throw("Error : Connection Closed");
+		throw("Error : recv() : Connection Closed");
 	else if (n == SOCKET_ERROR)
 		throw("recv() failed");
+}
+
+int ClientFTP::recvData(char *cmd)
+{
+	int	n;
+
+	n = ::recv(sockData, cmd, ClientFTP::STORBUFFERSIZE, 0);
+	return n;
 }
 
 void	ClientFTP::send(const char *str, int length)
@@ -246,10 +363,23 @@ void	ClientFTP::send(const char *str, int length)
 	int	n;
 	n = ::send(sock, str, length, 0);
 	if (n == 0)
-		throw("Error : Connection Closed");
+		throw("Error : send() : Connection Closed");
 	else if (n == SOCKET_ERROR)
 		throw("send() failed");
 }
+
+void	ClientFTP::sendData(const char *str, int length)
+{
+	int	n;
+
+	n = ::send(sockData, str, length, 0);
+	if (n == 0)
+		throw("Error : send() : Connection Closed");
+	else if (n == SOCKET_ERROR)
+		throw("send() failed");
+}
+
+#pragma endregion
 
 void	ClientFTP::responseCleanup(char *cmd)
 {
@@ -257,7 +387,7 @@ void	ClientFTP::responseCleanup(char *cmd)
 
 	while (str.find("\r\n") != std::string::npos)
 		str.erase(str.find ("\r\n"), 2);
-
+	memset(cmd, 0, sizeof(cmd));
 	strncpy(cmd, str.c_str(), str.length());
 }
 
@@ -313,17 +443,10 @@ void	ClientFTP::run()
 		return ;
 	}
 	startMessage();
-	try 
-	{
-		send(localUsername.c_str(), localUsername.length());
-	}
-	catch (char *err)
-	{
-		std::cerr << err << std::endl;
-	}
 	while (true)
 	{
-		handleResponse();
+		if (first != true)
+			std::cout << localHostname.c_str() << ">";
 		handleCommand();
 	}
 }
