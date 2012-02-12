@@ -209,23 +209,31 @@ void	ClientFTP::handleCommand()
 	std::cin.getline(cmd, FTPProtocol::CMD_MAX_LENGTH);
 
 	if (cmd[0] == '\0')
+	{
+		std::cout << localHostname.c_str() << ">";
 		return ;
+	}
 	std::vector<std::string>* Arguments = Parse(cmd);
 	if (Arguments->size() == 0)
+	{
+		std::cout << localHostname.c_str() << ">";
 		return ;
+	}
 
 	std::map<const std::string, handleFn>::iterator it = handleFnMap.find((*Arguments)[0]);
 	if (it != handleFnMap.end())
+	{
 		((*this).*(handleFnMap[(*it).first]))(*Arguments);
+	}
 	else
 		std::cerr << (*Arguments)[0].c_str() << ": Command not implemented" << std::endl;
+	std::cout << localHostname.c_str() << ">";
 }
 
 void	ClientFTP::recv(char *cmd)
 {
 	int	n;
 
-	std::cout << "recv\n";
 	n = ::recv(sock, cmd, FTPProtocol::CMD_MAX_LENGTH, 0);
 	if (n == 0)
 		throw("Error : Connection Closed");
@@ -287,7 +295,6 @@ void	ClientFTP::handleResponse()
 	std::map<const std::string, handleFn>::iterator it = handleFnMap.find((*Arguments)[0]);
 	if (it != handleFnMap.end())
 		((*this).*(handleFnMap[(*it).first]))(*Arguments);
-	std::cout << localHostname.c_str() << ">";
 }
 
 void	ClientFTP::run()
