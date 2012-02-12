@@ -38,6 +38,7 @@ private:
 	void CPwd(std::vector<std::string>& Arguments);
 	void CRetr(std::vector<std::string>& Arguments);
 	void CStor(std::vector<std::string>& Arguments);
+	void CQuit(std::vector<std::string>& Arguments);
 
 	typedef void (FTPdThread::*handleFn)(std::vector<std::string>& Arguments);
 
@@ -62,4 +63,5 @@ private:
 	bool userSession;
 
 	static const unsigned int STORBUFFERSIZE = 4096;
+	static const std::string FILE_DIRECTORY;
 };
