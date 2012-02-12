@@ -5,7 +5,6 @@ COMP445_LA1/COMP445_LA1 Client/Release
 COMP445_LA1/COMP445_LA1 Client/Debug
 COMP445_LA1/Debug
 COMP445_LA1/Release
-*.filters
 *.user
 *.suo
 enc_temp_folder
