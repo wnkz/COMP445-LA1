@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 #include "FTPd.h"
 
-const std::string FTPd::IP = "172.16.110.133";
 
 FTPd::FTPd(void)
 {
@@ -15,6 +14,7 @@ FTPd::FTPd(void)
 	BindSocket();
 	ListenSocket();
 
+	GetLocalIP();
 	LoadLocalHostname();
 }
 
@@ -38,7 +38,7 @@ void FTPd::start(void)
 		}
 
 		std::cout << "CONNECTION: " << inet_ntoa(cAddr.sin_addr) << ":" << ntohs(cAddr.sin_port) << std::endl;
-		FTPdThread* cThread = new FTPdThread(IP, c, &cAddr);
+		FTPdThread* cThread = new FTPdThread(localIP, c, &cAddr);
 		cThread->start();
 	}
 }
@@ -46,7 +46,7 @@ void FTPd::start(void)
 void FTPd::startMessage(void)
 {
 	std::cout << "ftpd_tcp starting at host: " << localHostname.c_str() << std::endl;
-	std::cout << "waiting to be contacted for transfering files..." << std::endl;
+	std::cout << "waiting to be contacted for transfering files..." << std::endl << std::endl;
 }
 
 void FTPd::InitSocket(void)
@@ -92,6 +92,32 @@ void FTPd::LoadLocalHostname(void)
 		localHostname = hname;
 	}
  }
+
+void FTPd::GetLocalIP(void)
+{
+	char ac[80];
+	if (gethostname(ac, sizeof(ac)) == SOCKET_ERROR) {
+		localIP = "127.0.0.1";
+		WSAError("Error while determining IP address, fallback to 127.0.0.1");
+		return ;
+	}
+	
+	HOSTENT* phe = gethostbyname(ac);
+	if (phe == 0) {
+		localIP = "127.0.0.1";
+		WSAError("Error while determining IP address, fallback to 127.0.0.1");
+		return ;
+	}
+
+	if (phe->h_addr_list[0] != 0) {
+		struct in_addr addr;
+		memcpy(&addr, phe->h_addr_list[0], sizeof(struct in_addr));
+		localIP = inet_ntoa(addr);
+	} else {
+		localIP = "127.0.0.1";
+		WSAError("Error while determining IP address, fallback to 127.0.0.1");
+	}
+}
 
 void FTPd::WSAError(std::string serr)
 {

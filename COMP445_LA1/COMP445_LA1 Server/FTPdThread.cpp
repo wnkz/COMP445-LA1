@@ -44,7 +44,6 @@ void FTPdThread::run(void)
 		else if (n == SOCKET_ERROR) {
 			std::cerr << "WSA Error Code: " << WSAGetLastError() << std::endl;
 			closesocket(s);
-			//WSACleanup();
 			break ;
 		}
 		else {
@@ -88,7 +87,7 @@ void FTPdThread::handleCommand(char* cmd)
 	CommandCleanup(cmd);
 	std::vector<std::string>* Arguments = CommandParse(cmd);
 
-	std::cout << "\tCOMMAND: (" << cmd << ")" << std::endl;
+	std::cout << "~> COMMAND: (" << cmd << ")" << std::endl;
 
 	if (Arguments->size() == 0)
 		return ;

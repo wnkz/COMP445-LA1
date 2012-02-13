@@ -21,6 +21,7 @@ private:
 	void BindSocket(void);
 	void ListenSocket(void);
 	void LoadLocalHostname(void);
+	void GetLocalIP(void);
 
 	void RuntimeError(std::string serr);
 	void WSAError(std::string serr);
@@ -30,10 +31,10 @@ private:
 	unsigned short port;
 	SOCKADDR_IN sAddr;
 
+	std::string localIP;
 	std::string localHostname;
 
 private:
-	const static std::string IP;
 	const static unsigned short DEFAULT_LISTEN_PORT = 21;
 };
 
